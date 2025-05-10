@@ -42,7 +42,7 @@ export class Boot extends Scene {
         this.load.audio('portal-open', 'assets/portal-open.wav')
         this.load.audio('reload', 'assets/reload.wav')
     }
-
+ 
     create() {
         this.scene.start('Preloader');
     }
