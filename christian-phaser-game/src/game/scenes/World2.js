@@ -5,8 +5,8 @@ import { Enemy } from "./Enemy"
 import { Portal } from "./Portal"
 import { PauseMenu } from "./PauseMenu"
 import { DangerZone } from "./DangerZone"
-import { MapBorder } from "./MapBorder"
 import Phaser from "phaser"
+
 
 export class World2 extends Scene {
   constructor() {
@@ -16,6 +16,11 @@ export class World2 extends Scene {
   }
 
   init() {
+    this.sound.stopAll()
+    this.sound.play("music3", {
+      loop: true,
+      volume: 0.5,
+    })
     // Inicializar/reiniciar todas las variables de estado
     this.score = 0
 
@@ -25,14 +30,14 @@ export class World2 extends Scene {
     this.enemiesPerHorde = 7 // Más enemigos base en la primera horda
     this.enemiesKilled = 0
     this.enemiesRequired = 0
-    this.enemyBaseHealth = 2 // Vida base de los enemigos en el Mundo 2
+    this.enemyBaseHealth = 2 // Vida base de  los enemigos en el Mundo 2
 
     // Portal
     this.portal = null
 
     // Tamaño del mundo
-    this.worldWidth = 2000
-    this.worldHeight = 2000
+    this.worldWidth = 6000
+    this.worldHeight = 6000
 
     // Arrays para limpiar en reinicio
     this.enemies = []
@@ -42,15 +47,20 @@ export class World2 extends Scene {
   }
 
   create() {
+
+    const { width, height } = this.cameras.main
+
+
     // Fondo simple
-    this.cameras.main.setBackgroundColor(0xaa0000)
+    const bg = this.add.tileSprite(0, 0, this.worldWidth, this.worldHeight, 'planet2bg');
+    bg.setOrigin(0, 0);
 
     // Habilitar físicas y establecer límites del mundo
     this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight)
 
     // Título del nivel
     this.add
-      .text(512, 50, "MUNDO 2", {
+      .text(width / 2, 50, "MUNDO 1", {
         fontFamily: "Arial Black",
         fontSize: 32,
         color: "#ffffff",
@@ -59,7 +69,7 @@ export class World2 extends Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setScrollFactor(0)
+      .setScrollFactor(0).setDepth(100)
 
     // Mostrar puntuación
     this.scoreText = this.add
@@ -70,22 +80,30 @@ export class World2 extends Scene {
         stroke: "#000000",
         strokeThickness: 2,
       })
-      .setScrollFactor(0)
+      .setScrollFactor(0).setDepth(100)
 
+    this.livesText = this.add
+      .text(50, 90, "♥ ♥ ♥", {
+        fontFamily: "Arial",
+        fontSize: 60,
+        color: "#ff0000",
+        stroke: "#000000",
+        strokeThickness: 2,
+      })
+      .setScrollFactor(0).setDepth(100)
     // Mostrar vidas y munición
-    this.statsText = this.add
-      .text(50, 90, "Vidas: 3 | Balas: 45", {
+    this.bulletsText = this.add
+      .text(50, height - 90, "45", {
         fontFamily: "Arial",
         fontSize: 20,
         color: "#ffffff",
         stroke: "#000000",
-        strokeThickness: 2,
       })
-      .setScrollFactor(0)
+      .setScrollFactor(0).setDepth(100)
 
     // Mostrar información de horda
     this.hordeText = this.add
-      .text(512, 90, "Horda: 0/" + this.totalHordes, {
+      .text(width - 200, 40, "Horda: 0/" + this.totalHordes, {
         fontFamily: "Arial",
         fontSize: 20,
         color: "#ffffff",
@@ -94,52 +112,100 @@ export class World2 extends Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setScrollFactor(0)
+      .setScrollFactor(0).setDepth(100)
+    this.enemiesText = this.add
+      .text(width - 220, 70, "Enemigos: 0/", {
+        fontFamily: "Arial",
+        fontSize: 20,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 2,
+        align: "center",
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0).setDepth(100)
 
     // Instrucciones
     this.add
-      .text(512, 700, "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad", {
+      .text(width / 2, height / 2 + 300, "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad", {
         fontFamily: "Arial",
         fontSize: 18,
         color: "#ffffff",
         align: "center",
+        fontStyle: "bold",
+        zindex: 100,
       })
       .setOrigin(0.5)
-      .setScrollFactor(0)
+      .setScrollFactor(0).setDepth(100)
+
+    // eliminar el texto de instrucciones después de 5 segundos
+    this.time.delayedCall(5000, () => {
+      this.tweens.add({
+        targets: this.children.list.filter((child) => child.text === "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad"),
+        alpha: 0,
+        duration: 500,
+        onComplete: () => {
+          this.children.list.filter((child) => child.text === "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad").forEach((child) => child.destroy())
+        },
+      })
+    })
 
     // Crear el jugador (cuadrado azul)
     this.player = new Player(this, 512, 600)
 
     // Crear borde del mapa
-    this.mapBorder = new MapBorder(this, this.worldWidth, this.worldHeight)
 
     // Nota: No usamos setupCollision aquí para permitir que el jugador toque el borde
     // y reciba daño, en lugar de ser bloqueado por la colisión física
-    // this.mapBorder.setupCollision(this.player);
 
-    // Añadir algunos obstáculos para mostrar el movimiento (diferentes al Mundo 1)
+    // Añadir algunos obstáculos para mostrar el movimiento
     this.obstacles = []
-    for (let i = 0; i < 15; i++) {
+
+    const exclusionObstacleRange = 500 // Puedes cambiar este valor para hacerlo más grande
+
+    for (let i = 0; i < 25; i++) {
       const x = Phaser.Math.Between(100, this.worldWidth - 100)
       const y = Phaser.Math.Between(100, this.worldHeight - 100)
 
-      // Crear círculos en lugar de rectángulos para el Mundo 2
-      const radius = Phaser.Math.Between(25, 75)
-      const color = Phaser.Math.Between(0x000000, 0xffffff)
+      let tooCloseToPlayer = x > 512 - exclusionObstacleRange && x < 512 + exclusionObstacleRange &&
+        y > 600 - exclusionObstacleRange && y < 600 + exclusionObstacleRange
 
-      const obstacle = this.add.circle(x, y, radius, color)
-      this.physics.add.existing(obstacle, true) // true = estático
+      let tooCloseToObstacles = this.obstacles.some(obstacle => {
+        const distance = Phaser.Math.Distance.Between(x, y, obstacle.x, obstacle.y)
+        return distance < 500
+      })
 
-      // Colisión con el jugador
-      this.physics.add.collider(this.player.sprite, obstacle)
+      let tooCloseToDangerZones = this.dangerZones.some(zone => {
+        const distance = Phaser.Math.Distance.Between(x, y, zone.sprite.x, zone.sprite.y)
+        return distance < 500
+      })
 
-      // Guardar referencia al obstáculo
-      this.obstacles.push(obstacle)
+      if (!tooCloseToPlayer && !tooCloseToObstacles && !tooCloseToDangerZones) {
+
+        const number = Phaser.Math.Between(1, 4) // Cambiado a 0-3 para incluir rock1
+        const randomImage = `rock${number}` // Cambiado a rock1, rock2, rock3, rock4
+        const obstacle = this.add.image(x, y, randomImage)
+        obstacle.setOrigin(0.5, 0.5)
+        obstacle.setDisplaySize(210, 175) // Tamaño del obstáculo
+        this.physics.add.existing(obstacle, true)
+
+        // Colisión con el jugador
+        this.physics.add.collider(this.player.sprite, obstacle)
+
+        // Guardar referencia al obstáculo
+        this.obstacles.push(obstacle)
+      } else {
+        console.log("Obstáculo demasiado cerca de otro objeto, reintentando...")
+        i-- // Reintenta si la zona está demasiado cerca de otro objeto
+      }
     }
 
-    // Añadir cajas de suministros (más que en el Mundo 1)
+
+
+
+    // Añadir cajas de suministros
     this.supplyBoxes = []
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 16; i++) {
       const x = Phaser.Math.Between(100, this.worldWidth - 100)
       const y = Phaser.Math.Between(100, this.worldHeight - 100)
 
@@ -147,16 +213,38 @@ export class World2 extends Scene {
       this.supplyBoxes.push(box)
     }
 
-    // Añadir zonas de peligro (cuadrados rojos) - más que en el Mundo 1
+    // Añadir zonas de peligro (cuadrados rojos)
     this.dangerZones = []
-    for (let i = 0; i < 18; i++) {
+
+    const exclusionRange = 500 // Puedes cambiar este valor para hacerlo más grande
+
+    for (let i = 0; i < 35; i++) {
       const x = Phaser.Math.Between(100, this.worldWidth - 100)
       const y = Phaser.Math.Between(100, this.worldHeight - 100)
-      const size = Phaser.Math.Between(70, 140)
 
-      const zone = new DangerZone(this, x, y, size, size)
-      this.dangerZones.push(zone)
+      // Asegurar que no está dentro del área de exclusión centrada en (512, 600)
+      let tooCloseToPlayer = x > 512 - exclusionRange && x < 512 + exclusionRange &&
+        y > 600 - exclusionRange && y < 600 + exclusionRange
+
+      let tooCloseToObstacles = this.obstacles.some(obstacle => {
+        const distance = Phaser.Math.Distance.Between(x, y, obstacle.x, obstacle.y)
+        return distance < 500
+      })
+
+      let tooCloseToDangerZones = this.dangerZones.some(zone => {
+        const distance = Phaser.Math.Distance.Between(x, y, zone.sprite.x, zone.sprite.y)
+        return distance < 500
+      })
+
+      if (!tooCloseToPlayer && !tooCloseToObstacles && !tooCloseToDangerZones) {
+        const zone = new DangerZone(this, x, y)
+        this.dangerZones.push(zone)
+      } else {
+        console.log("Zona de peligro demasiado cerca de otro objeto, reintentando...")
+        i-- // Reintenta si la zona está demasiado cerca de otro objeto
+      }
     }
+
 
     // Inicializar array de enemigos
     this.enemies = []
@@ -172,7 +260,7 @@ export class World2 extends Scene {
       .setDepth(90)
 
     this.pauseIcon = this.add
-      .text(this.cameras.main.width - 50, 50, "⏸️", {
+      .text(this.cameras.main.width - 50, 50, "⏸", {
         fontSize: "30px",
       })
       .setOrigin(0.5)
@@ -192,8 +280,6 @@ export class World2 extends Scene {
       this.pauseMenu.toggle()
     })
 
-    // Mensaje inicial para advertir sobre los bordes
-    this.showMessage("¡Cuidado con los bordes amarillos! Causan daño.")
   }
 
   update() {
@@ -205,27 +291,33 @@ export class World2 extends Scene {
 
     // Actualizar la puntuación y estadísticas
     this.scoreText.setText("Puntuación: " + this.score)
-    this.statsText.setText(`Vidas: ${this.player.lives} | Balas: ${this.player.ammo}`)
+    this.bulletsText.setText(`${this.player.ammo}`)
+    this.livesText.setText(
+      "♥ ".repeat(this.player.lives),
+      0,
+    )
 
     // Actualizar información de horda
     if (this.currentHorde <= this.totalHordes) {
       this.hordeText.setText(
-        `Horda: ${this.currentHorde}/${this.totalHordes} - Enemigos: ${this.enemiesKilled}/${this.enemiesRequired}`,
+        `Horda: ${this.currentHorde}/${this.totalHordes}`,
       )
+      this.enemiesText.setText(`Enemigos: ${this.enemiesKilled}/${this.enemiesRequired}`)
     } else {
-      this.hordeText.setText("¡Todas las hordas completadas!")
+      this.hordeText.setText(`Horda: ${this.currentHorde - 1}/${this.totalHordes}`)
+      this.enemiesText.setText("Enemigos: " + this.enemiesKilled + "/" + this.enemiesRequired)
     }
 
+
     // Comprobar colisión con el borde del mapa
-    if (this.mapBorder && this.mapBorder.checkCollision(this.player)) {
-      // Game over si el jugador ha muerto
-      this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
-    }
+
 
     // Comprobar zonas de peligro
     for (const zone of this.dangerZones) {
       if (zone.checkCollision(this.player)) {
         // Game over si el jugador ha muerto
+        this.sound.play("gameover")
+
         this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
       }
     }
@@ -236,14 +328,17 @@ export class World2 extends Scene {
       if (enemy.isActive()) {
         enemy.update(playerPos.x, playerPos.y)
 
-        // Comprobar colisión con el jugador
-        if (Phaser.Geom.Rectangle.Overlaps(this.player.sprite.getBounds(), enemy.sprite.getBounds())) {
+        // otra forma de comprobar colisión con el jugador mas eficiente
+        if (this.physics.overlap(this.player.sprite, enemy.sprite)) {
           // El jugador pierde una vida si no está inmune
           if (this.player.takeDamage()) {
             // Game over si no quedan vidas
+            this.sound.play("gameover")
+
             this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
           }
         }
+
       }
     })
 
@@ -261,11 +356,10 @@ export class World2 extends Scene {
           // Colisión con enemigos
           for (const enemy of this.enemies) {
             if (enemy.isActive() && bullet.sprite.active) {
-              if (Phaser.Geom.Rectangle.Overlaps(bullet.sprite.getBounds(), enemy.sprite.getBounds())) {
-                // Dañar al enemigo
+              if (this.physics.overlap(bullet.sprite, enemy.sprite)) {
                 if (enemy.takeDamage()) {
                   // Enemigo eliminado
-                  this.score += 15 // Más puntos en el Mundo 2
+                  this.score += 10
                   this.enemiesKilled++
 
                   // Comprobar si se ha completado la horda
@@ -275,6 +369,7 @@ export class World2 extends Scene {
                 // Destruir la bala
                 bullet.destroy()
               }
+
             }
           }
         }
@@ -312,12 +407,16 @@ export class World2 extends Scene {
 
       if (distance < 60) {
         // Victoria
+        this.sound.play("level-complete")
+
         this.scene.start("Victory", { score: this.score, fromScene: "World2" })
       }
     }
 
     // Comprobar si el jugador ha perdido todas las vidas
     if (this.player.lives <= 0) {
+      this.sound.play("gameover")
+
       this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
     }
   }
@@ -334,7 +433,7 @@ export class World2 extends Scene {
     }
 
     // Calcular número de enemigos para esta horda
-    const enemiesInThisHorde = this.enemiesPerHorde + (this.currentHorde - 1) * 3 // Más incremento por horda
+    const enemiesInThisHorde = this.enemiesPerHorde + (this.currentHorde - 1) * 2
     this.enemiesRequired = this.enemiesKilled + enemiesInThisHorde
 
     // Calcular vida de los enemigos para esta horda
@@ -363,6 +462,11 @@ export class World2 extends Scene {
       // Crear enemigo
       const enemy = new Enemy(this, x, y, enemyHealth)
       this.enemies.push(enemy)
+
+      for (const obstacle of this.obstacles) {
+        // Comprobar colisión con obstáculos
+        this.physics.add.collider(enemy.sprite, obstacle)
+      }
     }
   }
 
@@ -375,9 +479,36 @@ export class World2 extends Scene {
   }
 
   spawnPortal() {
-    // Generar posición aleatoria para el portal
-    const x = Phaser.Math.Between(500, this.worldWidth - 500)
-    const y = Phaser.Math.Between(500, this.worldHeight - 500)
+    this.sound.play("portal-open")
+
+    // generar el portal a 500 pixeles del j
+    let x = this.player.sprite.x + Phaser.Math.Between(300, 500)
+    let y = this.player.sprite.y + Phaser.Math.Between(300, 500)
+    // Asegurarse de que el portal no esté fuera de los límites del mundo
+    if (x < 100) x = 100
+    if (x > this.worldWidth - 100) x = this.worldWidth - 100
+    if (y < 100) y = 100
+    if (y > this.worldHeight - 100) y = this.worldHeight - 100
+
+    // Asegurarse de que el portal no esté dentro de una zona de peligro
+    for (const zone of this.dangerZones) {
+      const distanceToZone = Phaser.Math.Distance.Between(x, y, zone.sprite.x, zone.sprite.y)
+      if (distanceToZone < 200) {
+        // Si está demasiado cerca de una zona de peligro
+        x = this.player.sprite.x + Phaser.Math.Between(300, 500)
+        y = this.player.sprite.y + Phaser.Math.Between(300, 500)
+      }
+    }
+    // Asegurarse de que el portal no esté dentro de un obstáculo
+    for (const obstacle of this.obstacles) {
+      const distanceToObstacle = Phaser.Math.Distance.Between(x, y, obstacle.x, obstacle.y)
+      if (distanceToObstacle < 200) {
+        // Si está demasiado cerca de un obstáculo
+        x = this.player.sprite.x + Phaser.Math.Between(300, 500)
+        y = this.player.sprite.y + Phaser.Math.Between(300, 500)
+      }
+    }
+
 
     // Crear portal
     this.portal = new Portal(this, x, y)
@@ -397,8 +528,18 @@ export class World2 extends Scene {
 
   // Método para mostrar mensajes temporales
   showMessage(text) {
+    const { width, height } = this.cameras.main;
+
+    // Calcular el desplazamiento (Y) dependiendo de cuántos mensajes estén activos
+    let offsetY = 0;
+    if (this.activeMessages && this.activeMessages.length > 0) {
+      // Si ya hay mensajes, calculamos el espacio total que ocupan
+      offsetY = this.activeMessages.reduce((totalHeight, message) => totalHeight + message.height + 20, 0); // 20 es el espacio entre los mensajes
+    }
+
+    // Crear el nuevo mensaje
     const message = this.add
-      .text(512, 300, text, {
+      .text(width / 2, height / 2 + offsetY - 350, text, {
         fontFamily: "Arial Black",
         fontSize: 24,
         color: "#ffffff",
@@ -415,7 +556,13 @@ export class World2 extends Scene {
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
-      .setDepth(99)
+      .setDepth(99);
+
+    // Añadir el mensaje al array de mensajes activos
+    if (!this.activeMessages) {
+      this.activeMessages = [];
+    }
+    this.activeMessages.push(message);
 
     // Hacer que el mensaje desaparezca después de 2 segundos
     this.tweens.add({
@@ -424,8 +571,12 @@ export class World2 extends Scene {
       duration: 500,
       delay: 1500,
       onComplete: () => {
-        message.destroy()
+        message.destroy();
+        // Limpiar el mensaje de la lista de mensajes activos
+        this.activeMessages = this.activeMessages.filter(m => m !== message);
       },
-    })
+    });
   }
+
+
 }

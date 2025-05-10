@@ -6,31 +6,47 @@ export class MainMenu extends Scene {
   }
 
   create() {
+    // quitar todos los sonidos y poner music1
+    this.sound.stopAll()
+    this.sound.play("music1", {
+      loop: true,
+      volume: 0.5,
+    })
     // Fondo simple
-    this.cameras.main.setBackgroundColor(0x0088ff)
+    const bg = this.add.image(0, 0, "main-bg").setOrigin(0)
 
-    // Título del juego
-    this.add
-      .text(512, 200, "MI JUEGO PHASER", {
-        fontFamily: "Arial Black",
-        fontSize: 64,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 8,
-        align: "center",
-      })
-      .setOrigin(0.5)
+    // Obtener tamaño de la pantalla
+    const { width, height } = this.scale
+
+    // Calcular escala proporcional para cubrir toda la pantalla
+    const scaleX = width / bg.width
+    const scaleY = height / bg.height
+    const scale = Math.max(scaleX, scaleY) // Elige el mayor para cubrir
+
+    bg.setScale(scale)
+    bg.setPosition((width - bg.width * scale) / 2, (height - bg.height * scale) / 2)
+
+    const logo = this.add.image(width / 2, height / 2 - 200, "text-logo")
+    logo.setOrigin(0.5) // Centrar desde el centro del logo
+
 
     // Botón para comenzar
-    const startButton = this.add.rectangle(512, 400, 300, 80, 0x00aa00)
+    const startButton = this.add.image(width / 2, height / 2 + 200, "button")
     const startText = this.add
-      .text(512, 400, "COMENZAR", {
+      .text(width / 2, height / 2 + 200, "COMENZAR", {
         fontFamily: "Arial Black",
         fontSize: 32,
         color: "#ffffff",
         align: "center",
       })
       .setOrigin(0.5)
+
+    startButton.on("pointerover", () => {
+      startButton.setScale(1.05)
+    })
+    startButton.on("pointerout", () => {
+      startButton.setScale(1)
+    })
 
     // Hacer el botón interactivo
     startButton.setInteractive()
@@ -39,19 +55,18 @@ export class MainMenu extends Scene {
     })
 
     // Instrucciones
-    this.add
-      .text(512, 600, "Haz clic en COMENZAR para jugar", {
-        fontFamily: "Arial",
-        fontSize: 24,
-        color: "#ffffff",
-        align: "center",
-      })
-      .setOrigin(0.5)
 
-    // Botón para reiniciar progreso (opcional)
-    const resetButton = this.add.rectangle(512, 500, 250, 60, 0xaa0000)
+    const cam = this.cameras.main
+    const camButtonWidth = 250
+    const camButtonHeight = 60
+
+    const camX = cam.width - camButtonWidth / 2 - 20 // 20px de margen derecho
+    const camY = cam.height - camButtonHeight / 2 - 20 // 20px de margen inferior
+
+    const resetButton = this.add.image(camX, camY, "button")
+
     const resetText = this.add
-      .text(512, 500, "REINICIAR PROGRESO", {
+      .text(camX, camY, "REINICIAR PROGRESO", {
         fontFamily: "Arial",
         fontSize: 20,
         color: "#ffffff",
@@ -65,12 +80,21 @@ export class MainMenu extends Scene {
       localStorage.removeItem("world2_completed")
       this.showMessage("¡Progreso reiniciado!")
     })
+
+    resetButton.setScrollFactor(0)
+    resetText.setScrollFactor(0)
+
+
   }
+
+
 
   // Método para mostrar un mensaje temporal
   showMessage(text) {
+    const { width, height } = this.scale
+
     const message = this.add
-      .text(512, 300, text, {
+      .text(width / 2, height / 2 + 100, text, {
         fontFamily: "Arial Black",
         fontSize: 24,
         color: "#ffffff",

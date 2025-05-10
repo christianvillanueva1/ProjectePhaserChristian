@@ -6,13 +6,24 @@ export class Player {
     this.scene = scene
 
     // Crear el personaje como un cuadrado azul
-    this.sprite = scene.add.rectangle(x, y, 50, 50, 0x0088ff)
+    const centerX = this.scene.cameras.main.width / 2
+    const centerY = this.scene.cameras.main.height / 2
 
-    // Habilitar físicas para el personaje
-    scene.physics.add.existing(this.sprite)
+    this.sprite = this.scene.physics.add.sprite(centerX, centerY, 'player')
+    this.sprite.setScale(0.5) // Reduce al 50% del tamaño original
+
+    const newWidth = this.sprite.width - 150
+    const newHeight = this.sprite.height - 60
+
+    this.sprite.body.setSize(newWidth, newHeight)
+    this.sprite.body.setOffset(10, 10)
 
     // Ajustar propiedades físicas
     this.sprite.body.setCollideWorldBounds(true)
+    this.sprite.body.setBounce(0.2) // Rebote al chocar con los límites del mundo
+    this.sprite.setOrigin(0.25, 0.40) // Establecer el origen en el centro del sprite
+
+    const abilityUse = false;
 
     // Velocidad de movimiento
     this.speed = 200
@@ -29,7 +40,7 @@ export class Player {
 
     // Hacer que la cámara siga al personaje
     scene.cameras.main.startFollow(this.sprite)
-    scene.cameras.main.setFollowOffset(-this.sprite.width, -this.sprite.height)
+    scene.cameras.main.setBounds(0, 0, scene.physics.world.bounds.width, scene.physics.world.bounds.height)
 
     // Array para almacenar las balas
     this.bullets = []
@@ -54,14 +65,23 @@ export class Player {
 
     // Indicador de habilidad
     this.abilityText = scene.add
-      .text(scene.cameras.main.width - 150, 50, "", {
+      .text(scene.cameras.main.width - 150, scene.cameras.main.height - 150, "", {
         fontFamily: "Arial",
-        fontSize: 18,
+        fontSize: 60,
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 2,
       })
-      .setScrollFactor(0)
+      .setScrollFactor(0).setDepth(100)
+    this.inscruction = scene.add
+      .text(scene.cameras.main.width - 150, scene.cameras.main.height - 200, "", {
+        fontFamily: "Arial",
+        fontSize: 12,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 2,
+      })
+      .setScrollFactor(0).setDepth(100)
 
     // Último uso de habilidad
     this.lastAbilityUse = 0
@@ -101,15 +121,34 @@ export class Player {
     // Actualizar texto de habilidad
     if (this.ability) {
       const abilityIcon = this.ability === "explosion" ? "💥" : "🔥"
-      this.abilityText.setText(`Habilidad: ${abilityIcon} (E)`)
+      this.abilityText.setText(abilityIcon)
+      this.inscruction.setText("(E)")
     } else {
       this.abilityText.setText("")
+      this.inscruction.setText("")
+
     }
 
     // Usar habilidad con E
     if (this.keys.ability.isDown && this.ability && Date.now() - this.lastAbilityUse > this.abilityCooldown) {
       this.useAbility()
     }
+
+    // Hacer que el jugador gire hacia el puntero del mouse
+    this.rotateTowardsPointer()
+  }
+
+  rotateTowardsPointer() {
+    // Obtener la posición del puntero del mouse en el mundo
+    const pointer = this.scene.input.activePointer
+    const mouseX = pointer.worldX
+    const mouseY = pointer.worldY
+
+    // Calcular el ángulo entre el jugador y el puntero
+    const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, mouseX, mouseY)
+
+    // Establecer la rotación del jugador hacia el puntero
+    this.sprite.rotation = angle
   }
 
   shoot(pointer) {
@@ -144,12 +183,15 @@ export class Player {
     // Crear una nueva bala
     const bullet = new Bullet(this.scene, x, y, directionX, directionY)
     this.bullets.push(bullet)
+    // reproducir sonido de disparo
+    this.scene.sound.play("bullet", { volume: 0.5 })
+
 
     // Reducir munición
     this.ammo--
 
     // Si tiene habilidad de doble disparo, crear una segunda bala con ligera desviación
-    if (this.ability === "doubleshot" && this.ammo > 0) {
+    if (this.ability === "doubleshot" && this.ammo > 0 && this.abilityUse) {
       // Añadir una pequeña desviación para la segunda bala
       const angle = Math.atan2(directionY, directionX)
       const offsetAngle = angle + Math.PI / 20 // Desviación de ~9 grados
@@ -162,6 +204,7 @@ export class Player {
       // Reducir munición para la segunda bala
       this.ammo--
     }
+
   }
 
   useAbility() {
@@ -170,6 +213,8 @@ export class Player {
     this.lastAbilityUse = Date.now()
 
     if (this.ability === "explosion") {
+      this.abilityUse = true
+
       // Crear una explosión en un radio alrededor del jugador
       const explosionRadius = 200
 
@@ -201,18 +246,57 @@ export class Player {
             }
           }
         })
+        // Reproducir sonido de explosión
+        this.scene.sound.play("explosion")
       }
 
       // Consumir la habilidad después de usarla
       this.ability = null
+      this.abilityUse = false
       this.scene.showMessage("¡Explosión activada!")
     } else if (this.ability === "doubleshot") {
-      // El doble disparo se maneja en el método shoot
-      // Aquí solo mostramos un mensaje y consumimos la habilidad
-      this.scene.showMessage("¡Doble disparo activado!")
+      if (!this.abilityUse) {
+        this.abilityUse = true
 
-      // Consumir la habilidad después de usarla
-      this.ability = null
+
+        this.scene.showMessage("¡Doble disparo activado por 10 segundos!")
+
+        const duration = 10000 // duración total en milisegundos
+        const currentAbility = this.ability
+        let remainingTime = duration / 1000 // 10 segundos
+
+        // Mostrar cuenta regresiva en pantalla
+        const countdownText = this.scene.add.text(
+          this.scene.cameras.main.width / 2,
+          80,
+          `Doble disparo: ${remainingTime}s`,
+          {
+            fontFamily: "Arial",
+            fontSize: 20,
+            color: "#ffff00",
+            stroke: "#000000",
+            strokeThickness: 3,
+          }
+        ).setOrigin(0.5).setScrollFactor(0)
+
+        const countdownInterval = setInterval(() => {
+          remainingTime--
+          countdownText.setText(`Doble disparo: ${remainingTime}s`)
+
+          if (remainingTime <= 0) {
+            clearInterval(countdownInterval)
+            countdownText.destroy()
+
+            if (this.ability === currentAbility) {
+              this.ability = null
+              this.abilityUse = false
+
+              this.scene.showMessage("¡Doble disparo ha terminado!")
+            }
+          }
+        }, 1000)
+      }
+
     }
   }
 
@@ -248,6 +332,9 @@ export class Player {
       clearInterval(this.blinkInterval)
       this.sprite.alpha = 1
     }, this.immunityTime)
+
+    // Reproducir sonido de impacto
+    this.scene.sound.play("impact-player")
 
     return this.lives <= 0
   }

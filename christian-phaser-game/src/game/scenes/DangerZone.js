@@ -1,29 +1,13 @@
 export class DangerZone {
-    constructor(scene, x, y, width, height) {
+    constructor(scene, x, y) {
       this.scene = scene
   
       // Crear la zona de peligro como un rectángulo rojo
-      this.sprite = scene.add.rectangle(x, y, width, height, 0xff0000, 0.7)
+      this.sprite = scene.add.circle(x, y, 50, 0x000000, 1)
   
       // Habilitar físicas para la zona
       scene.physics.add.existing(this.sprite, true) // true = estático
   
-      // Añadir efecto de parpadeo
-      scene.tweens.add({
-        targets: this.sprite,
-        alpha: 0.4,
-        duration: 800,
-        yoyo: true,
-        repeat: -1,
-      })
-  
-      // Añadir símbolo de peligro
-      this.text = scene.add
-        .text(x, y, "⚠️", {
-          fontSize: "20px",
-          align: "center",
-        })
-        .setOrigin(0.5)
   
       // Último daño causado (para evitar daño continuo)
       this.lastDamageTime = 0
@@ -48,7 +32,7 @@ export class DangerZone {
         }
   
         // Mostrar mensaje
-        this.scene.showMessage("¡Zona peligrosa!")
+        this.scene.showMessage("Es un agujero!")
       }
   
       return false // El jugador sigue vivo

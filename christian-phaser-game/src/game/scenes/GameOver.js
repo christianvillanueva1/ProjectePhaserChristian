@@ -11,34 +11,45 @@ export class GameOver extends Scene {
     }
 
     create() {
+        const bg = this.add.image(0, 0, "main-bg").setOrigin(0)
+
+        // Obtener tamaño de la pantalla
+        const { width, height } = this.scale
+
+        // Calcular escala proporcional para cubrir toda la pantalla
+        const scaleX = width / bg.width
+        const scaleY = height / bg.height
+        const scale = Math.max(scaleX, scaleY) // Elige el mayor para cubrir
+
+        bg.setScale(scale)
+        bg.setPosition((width - bg.width * scale) / 2, (height - bg.height * scale) / 2)
         // Fondo simple
-        this.cameras.main.setBackgroundColor(0xff0000);
 
         // Mensaje de game over
-        this.add.text(512, 200, 'GAME OVER', {
-            fontFamily: 'Arial Black', 
-            fontSize: 64, 
+        this.add.text(width / 2, 200, 'GAME OVER', {
+            fontFamily: 'Arial Black',
+            fontSize: 64,
             color: '#ffffff',
-            stroke: '#000000', 
+            stroke: '#000000',
             strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5);
 
         // Mostrar puntuación
-        this.add.text(512, 300, 'Puntuación: ' + this.score, {
-            fontFamily: 'Arial Black', 
-            fontSize: 48, 
+        this.add.text(width / 2, 300, 'Puntuación: ' + this.score, {
+            fontFamily: 'Arial Black',
+            fontSize: 48,
             color: '#ffffff',
-            stroke: '#000000', 
+            stroke: '#000000',
             strokeThickness: 6,
             align: 'center'
         }).setOrigin(0.5);
 
         // Botón para reintentar el nivel
-        const retryButton = this.add.rectangle(512, 400, 300, 70, 0x00aa00);
-        const retryText = this.add.text(512, 400, 'REINTENTAR', {
-            fontFamily: 'Arial Black', 
-            fontSize: 28, 
+        const retryButton = this.add.image(width / 2, 400, "button");
+        const retryText = this.add.text(width / 2, 400, 'REINTENTAR', {
+            fontFamily: 'Arial Black',
+            fontSize: 28,
             color: '#ffffff',
             align: 'center'
         }).setOrigin(0.5);
@@ -49,10 +60,10 @@ export class GameOver extends Scene {
         });
 
         // Botón para volver a la selección de mundos
-        const worldsButton = this.add.rectangle(512, 500, 350, 70, 0x0088ff);
-        const worldsText = this.add.text(512, 500, 'SELECCIONAR MUNDO', {
-            fontFamily: 'Arial Black', 
-            fontSize: 28, 
+        const worldsButton = this.add.image(width / 2, 500, "button");
+        const worldsText = this.add.text(width / 2, 500, 'MUNDOS', {
+            fontFamily: 'Arial Black',
+            fontSize: 28,
             color: '#ffffff',
             align: 'center'
         }).setOrigin(0.5);
@@ -63,10 +74,10 @@ export class GameOver extends Scene {
         });
 
         // Botón para volver al menú principal
-        const menuButton = this.add.rectangle(512, 600, 350, 70, 0x0000aa);
-        const menuText = this.add.text(512, 600, 'MENÚ PRINCIPAL', {
-            fontFamily: 'Arial Black', 
-            fontSize: 28, 
+        const menuButton = this.add.image(width / 2, 600, "button");
+        const menuText = this.add.text(width / 2, 600, 'MENÚ PRINCIPAL', {
+            fontFamily: 'Arial Black',
+            fontSize: 28,
             color: '#ffffff',
             align: 'center'
         }).setOrigin(0.5);

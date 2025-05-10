@@ -15,7 +15,7 @@ const config = {
   parent: "game-container",
   backgroundColor: "#028af8",
   scale: {
-    mode: Scale.FIT,
+    mode: Scale.RESIZE,
     autoCenter: Scale.CENTER_BOTH,
   },
   // Añadir configuración de físicas

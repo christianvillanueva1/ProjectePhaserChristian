@@ -3,8 +3,7 @@ export class Bullet {
       this.scene = scene
   
       // Crear la bala como un rectángulo negro
-      this.sprite = scene.add.rectangle(x, y, 20, 10, 0x000000)
-  
+      this.sprite = this.scene.physics.add.sprite(x, y, 'bullet')  
       // Habilitar físicas para la bala
       scene.physics.add.existing(this.sprite)
   

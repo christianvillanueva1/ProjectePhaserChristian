@@ -11,6 +11,18 @@ export class Victory extends Scene {
   }
 
   create() {
+    const bg = this.add.image(0, 0, "main-bg").setOrigin(0)
+
+    // Obtener tamaño de la pantalla
+    const { width, height } = this.scale
+
+    // Calcular escala proporcional para cubrir toda la pantalla
+    const scaleX = width / bg.width
+    const scaleY = height / bg.height
+    const scale = Math.max(scaleX, scaleY) // Elige el mayor para cubrir
+
+    bg.setScale(scale)
+    bg.setPosition((width - bg.width * scale) / 2, (height - bg.height * scale) / 2)
     // Registrar que el nivel ha sido completado
     if (this.fromScene === "World1") {
       localStorage.setItem("world1_completed", "true")
@@ -21,9 +33,10 @@ export class Victory extends Scene {
     // Fondo simple
     this.cameras.main.setBackgroundColor(0x00ff00)
 
+
     // Mensaje de victoria
     this.add
-      .text(512, 200, "¡VICTORIA!", {
+      .text(width / 2, 200, "¡VICTORIA!", {
         fontFamily: "Arial Black",
         fontSize: 64,
         color: "#ffffff",
@@ -35,7 +48,7 @@ export class Victory extends Scene {
 
     // Mostrar puntuación
     this.add
-      .text(512, 300, "Puntuación: " + this.score, {
+      .text(width / 2, 300, "Puntuación: " + this.score, {
         fontFamily: "Arial Black",
         fontSize: 48,
         color: "#ffffff",
@@ -48,7 +61,7 @@ export class Victory extends Scene {
     // Mostrar mensaje de mundo completado
     const worldName = this.fromScene === "World1" ? "MUNDO 1" : "MUNDO 2"
     this.add
-      .text(512, 370, `¡${worldName} COMPLETADO!`, {
+      .text(width / 2, 370, `¡${worldName} COMPLETADO!`, {
         fontFamily: "Arial Black",
         fontSize: 32,
         color: "#ffff00",
@@ -59,9 +72,9 @@ export class Victory extends Scene {
       .setOrigin(0.5)
 
     // Botón para volver a la selección de mundos
-    const worldsButton = this.add.rectangle(512, 450, 350, 70, 0x0088ff)
+    const worldsButton = this.add.image(width / 2, 450, "button")
     const worldsText = this.add
-      .text(512, 450, "SELECCIONAR MUNDO", {
+      .text(width / 2, 450, "MUNDOS", {
         fontFamily: "Arial Black",
         fontSize: 28,
         color: "#ffffff",
@@ -75,9 +88,9 @@ export class Victory extends Scene {
     })
 
     // Botón para volver al menú principal
-    const menuButton = this.add.rectangle(512, 550, 350, 70, 0x0000aa)
+    const menuButton = this.add.image(width / 2, 550, "button")
     const menuText = this.add
-      .text(512, 550, "MENÚ PRINCIPAL", {
+      .text(width / 2, 550, "MENÚ PRINCIPAL", {
         fontFamily: "Arial Black",
         fontSize: 28,
         color: "#ffffff",
