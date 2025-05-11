@@ -60,7 +60,7 @@ export class World2 extends Scene {
 
     // Título del nivel
     this.add
-      .text(width / 2, 50, "MUNDO 1", {
+      .text(width / 2, 50, "MUNDO 2", {
         fontFamily: "Arial Black",
         fontSize: 32,
         color: "#ffffff",
