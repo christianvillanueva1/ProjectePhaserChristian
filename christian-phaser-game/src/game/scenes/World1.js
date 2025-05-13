@@ -439,6 +439,16 @@ export class World1 extends Scene {
     // Mostrar mensaje
     this.showMessage(`¡Horda ${this.currentHorde}/${this.totalHordes}!`)
 
+    for (let i = 0; i < 4; i++) {
+      const x = Phaser.Math.Between(100, this.worldWidth - 100)
+      const y = Phaser.Math.Between(100, this.worldHeight - 100)
+
+      const box = new SupplyBox(this, x, y)
+      this.supplyBoxes.push(box)
+    }
+    this.showMessage(this.supplyBoxes.length + " cajas de suministros disponibles.")
+
+
     // Generar enemigos
     for (let i = 0; i < enemiesInThisHorde; i++) {
       // Generar posición aleatoria lejos del jugador

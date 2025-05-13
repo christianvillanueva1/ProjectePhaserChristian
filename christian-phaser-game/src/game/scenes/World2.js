@@ -1,62 +1,65 @@
-import { Scene } from "phaser"
-import { Player } from "./Player"
-import { SupplyBox } from "./SupplyBox"
-import { Enemy } from "./Enemy"
-import { Portal } from "./Portal"
-import { PauseMenu } from "./PauseMenu"
-import { DangerZone } from "./DangerZone"
-import Phaser from "phaser"
-
+import { Scene } from "phaser";
+import { Player } from "./Player";
+import { SupplyBox } from "./SupplyBox";
+import { Enemy } from "./Enemy";
+import { Portal } from "./Portal";
+import { PauseMenu } from "./PauseMenu";
+import { DangerZone } from "./DangerZone";
+import Phaser from "phaser";
 
 export class World2 extends Scene {
   constructor() {
-    super("World2")
+    super("World2");
 
     // Estas variables se inicializarán en init() para asegurar un reinicio correcto
   }
 
   init() {
-    this.sound.stopAll()
+    this.sound.stopAll();
     this.sound.play("music3", {
       loop: true,
       volume: 0.5,
-    })
+    });
     // Inicializar/reiniciar todas las variables de estado
-    this.score = 0
+    this.score = 0;
 
     // Configuración de hordas
-    this.totalHordes = 7 // Más hordas en el Mundo 2
-    this.currentHorde = 0 // Empezamos en 0, la primera horda será la 1
-    this.enemiesPerHorde = 7 // Más enemigos base en la primera horda
-    this.enemiesKilled = 0
-    this.enemiesRequired = 0
-    this.enemyBaseHealth = 2 // Vida base de  los enemigos en el Mundo 2
+    this.totalHordes = 7; // Más hordas en el Mundo 2
+    this.currentHorde = 0; // Empezamos en 0, la primera horda será la 1
+    this.enemiesPerHorde = 7; // Más enemigos base en la primera horda
+    this.enemiesKilled = 0;
+    this.enemiesRequired = 0;
+    this.enemyBaseHealth = 2; // Vida base de  los enemigos en el Mundo 2
 
     // Portal
-    this.portal = null
+    this.portal = null;
 
     // Tamaño del mundo
-    this.worldWidth = 6000
-    this.worldHeight = 6000
+    this.worldWidth = 6000;
+    this.worldHeight = 6000;
 
     // Arrays para limpiar en reinicio
-    this.enemies = []
-    this.obstacles = []
-    this.supplyBoxes = []
-    this.dangerZones = []
+    this.enemies = [];
+    this.obstacles = [];
+    this.supplyBoxes = [];
+    this.dangerZones = [];
   }
 
   create() {
-
-    const { width, height } = this.cameras.main
-
+    const { width, height } = this.cameras.main;
 
     // Fondo simple
-    const bg = this.add.tileSprite(0, 0, this.worldWidth, this.worldHeight, 'planet2bg');
+    const bg = this.add.tileSprite(
+      0,
+      0,
+      this.worldWidth,
+      this.worldHeight,
+      "planet2bg"
+    );
     bg.setOrigin(0, 0);
 
     // Habilitar físicas y establecer límites del mundo
-    this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight)
+    this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
 
     // Título del nivel
     this.add
@@ -69,7 +72,8 @@ export class World2 extends Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
 
     // Mostrar puntuación
     this.scoreText = this.add
@@ -80,7 +84,8 @@ export class World2 extends Scene {
         stroke: "#000000",
         strokeThickness: 2,
       })
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
 
     this.livesText = this.add
       .text(50, 90, "♥ ♥ ♥", {
@@ -90,7 +95,8 @@ export class World2 extends Scene {
         stroke: "#000000",
         strokeThickness: 2,
       })
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
     // Mostrar vidas y munición
     this.bulletsText = this.add
       .text(50, height - 90, "45", {
@@ -99,7 +105,8 @@ export class World2 extends Scene {
         color: "#ffffff",
         stroke: "#000000",
       })
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
 
     // Mostrar información de horda
     this.hordeText = this.add
@@ -112,7 +119,8 @@ export class World2 extends Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
     this.enemiesText = this.add
       .text(width - 220, 70, "Enemigos: 0/", {
         fontFamily: "Arial",
@@ -123,35 +131,52 @@ export class World2 extends Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
 
     // Instrucciones
     this.add
-      .text(width / 2, height / 2 + 300, "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad", {
-        fontFamily: "Arial",
-        fontSize: 18,
-        color: "#ffffff",
-        align: "center",
-        fontStyle: "bold",
-        zindex: 100,
-      })
+      .text(
+        width / 2,
+        height / 2 + 300,
+        "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad",
+        {
+          fontFamily: "Arial",
+          fontSize: 18,
+          color: "#ffffff",
+          align: "center",
+          fontStyle: "bold",
+          zindex: 100,
+        }
+      )
       .setOrigin(0.5)
-      .setScrollFactor(0).setDepth(100)
+      .setScrollFactor(0)
+      .setDepth(100);
 
     // eliminar el texto de instrucciones después de 5 segundos
     this.time.delayedCall(5000, () => {
       this.tweens.add({
-        targets: this.children.list.filter((child) => child.text === "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad"),
+        targets: this.children.list.filter(
+          (child) =>
+            child.text ===
+            "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad"
+        ),
         alpha: 0,
         duration: 500,
         onComplete: () => {
-          this.children.list.filter((child) => child.text === "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad").forEach((child) => child.destroy())
+          this.children.list
+            .filter(
+              (child) =>
+                child.text ===
+                "WASD: Mover | CLIC: Disparar\nESPACIO: Recoger caja | E: Usar habilidad"
+            )
+            .forEach((child) => child.destroy());
         },
-      })
-    })
+      });
+    });
 
     // Crear el jugador (cuadrado azul)
-    this.player = new Player(this, 512, 600)
+    this.player = new Player(this, 512, 600);
 
     // Crear borde del mapa
 
@@ -159,105 +184,130 @@ export class World2 extends Scene {
     // y reciba daño, en lugar de ser bloqueado por la colisión física
 
     // Añadir algunos obstáculos para mostrar el movimiento
-    this.obstacles = []
+    this.obstacles = [];
 
-    const exclusionObstacleRange = 500 // Puedes cambiar este valor para hacerlo más grande
+    const exclusionObstacleRange = 500; // Puedes cambiar este valor para hacerlo más grande
 
     for (let i = 0; i < 25; i++) {
-      const x = Phaser.Math.Between(100, this.worldWidth - 100)
-      const y = Phaser.Math.Between(100, this.worldHeight - 100)
+      const x = Phaser.Math.Between(100, this.worldWidth - 100);
+      const y = Phaser.Math.Between(100, this.worldHeight - 100);
 
-      let tooCloseToPlayer = x > 512 - exclusionObstacleRange && x < 512 + exclusionObstacleRange &&
-        y > 600 - exclusionObstacleRange && y < 600 + exclusionObstacleRange
+      let tooCloseToPlayer =
+        x > 512 - exclusionObstacleRange &&
+        x < 512 + exclusionObstacleRange &&
+        y > 600 - exclusionObstacleRange &&
+        y < 600 + exclusionObstacleRange;
 
-      let tooCloseToObstacles = this.obstacles.some(obstacle => {
-        const distance = Phaser.Math.Distance.Between(x, y, obstacle.x, obstacle.y)
-        return distance < 500
-      })
+      let tooCloseToObstacles = this.obstacles.some((obstacle) => {
+        const distance = Phaser.Math.Distance.Between(
+          x,
+          y,
+          obstacle.x,
+          obstacle.y
+        );
+        return distance < 500;
+      });
 
-      let tooCloseToDangerZones = this.dangerZones.some(zone => {
-        const distance = Phaser.Math.Distance.Between(x, y, zone.sprite.x, zone.sprite.y)
-        return distance < 500
-      })
+      let tooCloseToDangerZones = this.dangerZones.some((zone) => {
+        const distance = Phaser.Math.Distance.Between(
+          x,
+          y,
+          zone.sprite.x,
+          zone.sprite.y
+        );
+        return distance < 500;
+      });
 
       if (!tooCloseToPlayer && !tooCloseToObstacles && !tooCloseToDangerZones) {
-
-        const number = Phaser.Math.Between(1, 4) // Cambiado a 0-3 para incluir rock1
-        const randomImage = `rock${number}` // Cambiado a rock1, rock2, rock3, rock4
-        const obstacle = this.add.image(x, y, randomImage)
-        obstacle.setOrigin(0.5, 0.5)
-        obstacle.setDisplaySize(210, 175) // Tamaño del obstáculo
-        this.physics.add.existing(obstacle, true)
+        const number = Phaser.Math.Between(1, 4); // Cambiado a 0-3 para incluir rock1
+        const randomImage = `rock${number}`; // Cambiado a rock1, rock2, rock3, rock4
+        const obstacle = this.add.image(x, y, randomImage);
+        obstacle.setOrigin(0.5, 0.5);
+        obstacle.setDisplaySize(210, 175); // Tamaño del obstáculo
+        this.physics.add.existing(obstacle, true);
 
         // Colisión con el jugador
-        this.physics.add.collider(this.player.sprite, obstacle)
+        this.physics.add.collider(this.player.sprite, obstacle);
 
         // Guardar referencia al obstáculo
-        this.obstacles.push(obstacle)
+        this.obstacles.push(obstacle);
       } else {
-        console.log("Obstáculo demasiado cerca de otro objeto, reintentando...")
-        i-- // Reintenta si la zona está demasiado cerca de otro objeto
+        console.log(
+          "Obstáculo demasiado cerca de otro objeto, reintentando..."
+        );
+        i--; // Reintenta si la zona está demasiado cerca de otro objeto
       }
     }
 
-
-
-
     // Añadir cajas de suministros
-    this.supplyBoxes = []
+    this.supplyBoxes = [];
     for (let i = 0; i < 16; i++) {
-      const x = Phaser.Math.Between(100, this.worldWidth - 100)
-      const y = Phaser.Math.Between(100, this.worldHeight - 100)
+      const x = Phaser.Math.Between(100, this.worldWidth - 100);
+      const y = Phaser.Math.Between(100, this.worldHeight - 100);
 
-      const box = new SupplyBox(this, x, y)
-      this.supplyBoxes.push(box)
+      const box = new SupplyBox(this, x, y);
+      this.supplyBoxes.push(box);
     }
 
     // Añadir zonas de peligro (cuadrados rojos)
-    this.dangerZones = []
+    this.dangerZones = [];
 
-    const exclusionRange = 500 // Puedes cambiar este valor para hacerlo más grande
+    const exclusionRange = 500; // Puedes cambiar este valor para hacerlo más grande
 
     for (let i = 0; i < 35; i++) {
-      const x = Phaser.Math.Between(100, this.worldWidth - 100)
-      const y = Phaser.Math.Between(100, this.worldHeight - 100)
+      const x = Phaser.Math.Between(100, this.worldWidth - 100);
+      const y = Phaser.Math.Between(100, this.worldHeight - 100);
 
       // Asegurar que no está dentro del área de exclusión centrada en (512, 600)
-      let tooCloseToPlayer = x > 512 - exclusionRange && x < 512 + exclusionRange &&
-        y > 600 - exclusionRange && y < 600 + exclusionRange
+      let tooCloseToPlayer =
+        x > 512 - exclusionRange &&
+        x < 512 + exclusionRange &&
+        y > 600 - exclusionRange &&
+        y < 600 + exclusionRange;
 
-      let tooCloseToObstacles = this.obstacles.some(obstacle => {
-        const distance = Phaser.Math.Distance.Between(x, y, obstacle.x, obstacle.y)
-        return distance < 500
-      })
+      let tooCloseToObstacles = this.obstacles.some((obstacle) => {
+        const distance = Phaser.Math.Distance.Between(
+          x,
+          y,
+          obstacle.x,
+          obstacle.y
+        );
+        return distance < 500;
+      });
 
-      let tooCloseToDangerZones = this.dangerZones.some(zone => {
-        const distance = Phaser.Math.Distance.Between(x, y, zone.sprite.x, zone.sprite.y)
-        return distance < 500
-      })
+      let tooCloseToDangerZones = this.dangerZones.some((zone) => {
+        const distance = Phaser.Math.Distance.Between(
+          x,
+          y,
+          zone.sprite.x,
+          zone.sprite.y
+        );
+        return distance < 500;
+      });
 
       if (!tooCloseToPlayer && !tooCloseToObstacles && !tooCloseToDangerZones) {
-        const zone = new DangerZone(this, x, y)
-        this.dangerZones.push(zone)
+        const zone = new DangerZone(this, x, y);
+        this.dangerZones.push(zone);
       } else {
-        console.log("Zona de peligro demasiado cerca de otro objeto, reintentando...")
-        i-- // Reintenta si la zona está demasiado cerca de otro objeto
+        console.log(
+          "Zona de peligro demasiado cerca de otro objeto, reintentando..."
+        );
+        i--; // Reintenta si la zona está demasiado cerca de otro objeto
       }
     }
 
-
     // Inicializar array de enemigos
-    this.enemies = []
+    this.enemies = [];
 
     // Iniciar la primera horda
-    this.startNextHorde()
+    this.startNextHorde();
 
     // Crear botón de pausa en el HUD
     this.pauseButton = this.add
       .rectangle(this.cameras.main.width - 50, 50, 60, 60, 0x333333)
       .setScrollFactor(0)
       .setInteractive()
-      .setDepth(90)
+      .setDepth(90);
 
     this.pauseIcon = this.add
       .text(this.cameras.main.width - 50, 50, "⏸", {
@@ -265,82 +315,85 @@ export class World2 extends Scene {
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
-      .setDepth(91)
+      .setDepth(91);
 
     // Crear menú de pausa
-    this.pauseMenu = new PauseMenu(this)
+    this.pauseMenu = new PauseMenu(this);
 
     // Configurar eventos de pausa
     this.pauseButton.on("pointerdown", () => {
-      this.pauseMenu.toggle()
-    })
+      this.pauseMenu.toggle();
+    });
 
     // Tecla Escape para pausar
     this.input.keyboard.on("keydown-ESC", () => {
-      this.pauseMenu.toggle()
-    })
-
+      this.pauseMenu.toggle();
+    });
   }
 
   update() {
     // No actualizar si el juego está pausado
-    if (this.pauseMenu && this.pauseMenu.isActive) return
+    if (this.pauseMenu && this.pauseMenu.isActive) return;
 
     // Actualizar el jugador
-    this.player.update()
+    this.player.update();
 
     // Actualizar la puntuación y estadísticas
-    this.scoreText.setText("Puntuación: " + this.score)
-    this.bulletsText.setText(`${this.player.ammo}`)
-    this.livesText.setText(
-      "♥ ".repeat(this.player.lives),
-      0,
-    )
+    this.scoreText.setText("Puntuación: " + this.score);
+    this.bulletsText.setText(`${this.player.ammo}`);
+    this.livesText.setText("♥ ".repeat(this.player.lives), 0);
 
     // Actualizar información de horda
     if (this.currentHorde <= this.totalHordes) {
-      this.hordeText.setText(
-        `Horda: ${this.currentHorde}/${this.totalHordes}`,
-      )
-      this.enemiesText.setText(`Enemigos: ${this.enemiesKilled}/${this.enemiesRequired}`)
+      this.hordeText.setText(`Horda: ${this.currentHorde}/${this.totalHordes}`);
+      this.enemiesText.setText(
+        `Enemigos: ${this.enemiesKilled}/${this.enemiesRequired}`
+      );
     } else {
-      this.hordeText.setText(`Horda: ${this.currentHorde - 1}/${this.totalHordes}`)
-      this.enemiesText.setText("Enemigos: " + this.enemiesKilled + "/" + this.enemiesRequired)
+      this.hordeText.setText(
+        `Horda: ${this.currentHorde - 1}/${this.totalHordes}`
+      );
+      this.enemiesText.setText(
+        "Enemigos: " + this.enemiesKilled + "/" + this.enemiesRequired
+      );
     }
 
-
     // Comprobar colisión con el borde del mapa
-
 
     // Comprobar zonas de peligro
     for (const zone of this.dangerZones) {
       if (zone.checkCollision(this.player)) {
         // Game over si el jugador ha muerto
-        this.sound.play("gameover")
+        this.sound.play("gameover");
 
-        this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
+        this.scene.start("GameOver", {
+          score: this.score,
+          fromScene: "World2",
+        });
       }
     }
 
     // Actualizar enemigos
-    const playerPos = this.player.getPosition()
+    const playerPos = this.player.getPosition();
     this.enemies.forEach((enemy) => {
       if (enemy.isActive()) {
-        enemy.update(playerPos.x, playerPos.y)
+        enemy.update(playerPos.x, playerPos.y);
 
         // otra forma de comprobar colisión con el jugador mas eficiente
         if (this.physics.overlap(this.player.sprite, enemy.sprite)) {
           // El jugador pierde una vida si no está inmune
           if (this.player.takeDamage()) {
             // Game over si no quedan vidas
-            this.sound.play("gameover")
+            this.sound.play("gameover");
 
-            this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
+            this.scene.start("GameOver", {
+              score: this.score,
+              fromScene: "World2",
+            });
           }
         }
-
       }
-    })
+    });
 
     // Comprobar colisiones entre balas y enemigos
     if (this.player.bullets && this.player.bullets.length > 0) {
@@ -349,8 +402,8 @@ export class World2 extends Scene {
           // Colisión con obstáculos
           for (const obstacle of this.obstacles) {
             this.physics.add.collider(bullet.sprite, obstacle, () => {
-              bullet.destroy()
-            })
+              bullet.destroy();
+            });
           }
 
           // Colisión con enemigos
@@ -359,17 +412,16 @@ export class World2 extends Scene {
               if (this.physics.overlap(bullet.sprite, enemy.sprite)) {
                 if (enemy.takeDamage()) {
                   // Enemigo eliminado
-                  this.score += 10
-                  this.enemiesKilled++
+                  this.score += 10;
+                  this.enemiesKilled++;
 
                   // Comprobar si se ha completado la horda
-                  this.checkHordeCompletion()
+                  this.checkHordeCompletion();
                 }
 
                 // Destruir la bala
-                bullet.destroy()
+                bullet.destroy();
               }
-
             }
           }
         }
@@ -379,19 +431,19 @@ export class World2 extends Scene {
     // Comprobar si el jugador está sobre una caja y pulsa espacio
     if (Phaser.Input.Keyboard.JustDown(this.player.keys.space)) {
       for (const box of this.supplyBoxes) {
-        if (box.collected) continue
+        if (box.collected) continue;
 
         const distance = Phaser.Math.Distance.Between(
           this.player.sprite.x,
           this.player.sprite.y,
           box.sprite.x,
-          box.sprite.y,
-        )
+          box.sprite.y
+        );
 
         if (distance < 70) {
           // Distancia para recoger
-          box.collect(this.player)
-          break
+          box.collect(this.player);
+          break;
         }
       }
     }
@@ -402,127 +454,157 @@ export class World2 extends Scene {
         this.player.sprite.x,
         this.player.sprite.y,
         this.portal.sprite.x,
-        this.portal.sprite.y,
-      )
+        this.portal.sprite.y
+      );
 
       if (distance < 60) {
         // Victoria
-        this.sound.play("level-complete")
+        this.sound.play("level-complete");
 
-        this.scene.start("Victory", { score: this.score, fromScene: "World2" })
+        this.scene.start("Victory", { score: this.score, fromScene: "World2" });
       }
     }
 
     // Comprobar si el jugador ha perdido todas las vidas
     if (this.player.lives <= 0) {
-      this.sound.play("gameover")
+      this.sound.play("gameover");
 
-      this.scene.start("GameOver", { score: this.score, fromScene: "World2" })
+      this.scene.start("GameOver", { score: this.score, fromScene: "World2" });
     }
   }
 
   startNextHorde() {
     // Incrementar contador de horda
-    this.currentHorde++
+    this.currentHorde++;
 
     // Comprobar si hemos completado todas las hordas
     if (this.currentHorde > this.totalHordes) {
-      this.showMessage("¡Todas las hordas completadas!")
-      this.spawnPortal()
-      return
+      this.showMessage("¡Todas las hordas completadas!");
+      this.spawnPortal();
+      return;
     }
 
     // Calcular número de enemigos para esta horda
-    const enemiesInThisHorde = this.enemiesPerHorde + (this.currentHorde - 1) * 2
-    this.enemiesRequired = this.enemiesKilled + enemiesInThisHorde
+    const enemiesInThisHorde =
+      this.enemiesPerHorde + (this.currentHorde - 1) * 2;
+    this.enemiesRequired = this.enemiesKilled + enemiesInThisHorde;
 
     // Calcular vida de los enemigos para esta horda
-    const enemyHealth = this.enemyBaseHealth + Math.floor((this.currentHorde - 1) / 2)
+    const enemyHealth =
+      this.enemyBaseHealth + Math.floor((this.currentHorde - 1) / 2);
 
     // Mostrar mensaje
-    this.showMessage(`¡Horda ${this.currentHorde}/${this.totalHordes}!`)
+    this.showMessage(`¡Horda ${this.currentHorde}/${this.totalHordes}!`);
+
+    for (let i = 0; i < 4; i++) {
+      const x = Phaser.Math.Between(100, this.worldWidth - 100);
+      const y = Phaser.Math.Between(100, this.worldHeight - 100);
+
+      const box = new SupplyBox(this, x, y);
+      this.supplyBoxes.push(box);
+    }
+    this.showMessage(
+      this.supplyBoxes.length + " cajas de suministros disponibles."
+    );
 
     // Generar enemigos
     for (let i = 0; i < enemiesInThisHorde; i++) {
       // Generar posición aleatoria lejos del jugador
-      let x, y
-      let tooClose = true
+      let x, y;
+      let tooClose = true;
 
       while (tooClose) {
-        x = Phaser.Math.Between(100, this.worldWidth - 100)
-        y = Phaser.Math.Between(100, this.worldHeight - 100)
+        x = Phaser.Math.Between(100, this.worldWidth - 100);
+        y = Phaser.Math.Between(100, this.worldHeight - 100);
 
-        const distance = Phaser.Math.Distance.Between(this.player.sprite.x, this.player.sprite.y, x, y)
+        const distance = Phaser.Math.Distance.Between(
+          this.player.sprite.x,
+          this.player.sprite.y,
+          x,
+          y
+        );
 
         if (distance > 300) {
-          tooClose = false
+          tooClose = false;
         }
       }
 
       // Crear enemigo
-      const enemy = new Enemy(this, x, y, enemyHealth)
-      this.enemies.push(enemy)
+      const enemy = new Enemy(this, x, y, enemyHealth);
+      this.enemies.push(enemy);
 
       for (const obstacle of this.obstacles) {
         // Comprobar colisión con obstáculos
-        this.physics.add.collider(enemy.sprite, obstacle)
+        this.physics.add.collider(enemy.sprite, obstacle);
       }
     }
   }
 
   checkHordeCompletion() {
     // Comprobar si se han eliminado todos los enemigos de la horda actual
-    if (this.enemiesKilled >= this.enemiesRequired && this.currentHorde <= this.totalHordes) {
+    if (
+      this.enemiesKilled >= this.enemiesRequired &&
+      this.currentHorde <= this.totalHordes
+    ) {
       // Iniciar siguiente horda
-      this.startNextHorde()
+      this.startNextHorde();
     }
   }
 
   spawnPortal() {
-    this.sound.play("portal-open")
+    this.sound.play("portal-open");
 
     // generar el portal a 500 pixeles del j
-    let x = this.player.sprite.x + Phaser.Math.Between(300, 500)
-    let y = this.player.sprite.y + Phaser.Math.Between(300, 500)
+    let x = this.player.sprite.x + Phaser.Math.Between(300, 500);
+    let y = this.player.sprite.y + Phaser.Math.Between(300, 500);
     // Asegurarse de que el portal no esté fuera de los límites del mundo
-    if (x < 100) x = 100
-    if (x > this.worldWidth - 100) x = this.worldWidth - 100
-    if (y < 100) y = 100
-    if (y > this.worldHeight - 100) y = this.worldHeight - 100
+    if (x < 100) x = 100;
+    if (x > this.worldWidth - 100) x = this.worldWidth - 100;
+    if (y < 100) y = 100;
+    if (y > this.worldHeight - 100) y = this.worldHeight - 100;
 
     // Asegurarse de que el portal no esté dentro de una zona de peligro
     for (const zone of this.dangerZones) {
-      const distanceToZone = Phaser.Math.Distance.Between(x, y, zone.sprite.x, zone.sprite.y)
+      const distanceToZone = Phaser.Math.Distance.Between(
+        x,
+        y,
+        zone.sprite.x,
+        zone.sprite.y
+      );
       if (distanceToZone < 200) {
         // Si está demasiado cerca de una zona de peligro
-        x = this.player.sprite.x + Phaser.Math.Between(300, 500)
-        y = this.player.sprite.y + Phaser.Math.Between(300, 500)
+        x = this.player.sprite.x + Phaser.Math.Between(300, 500);
+        y = this.player.sprite.y + Phaser.Math.Between(300, 500);
       }
     }
     // Asegurarse de que el portal no esté dentro de un obstáculo
     for (const obstacle of this.obstacles) {
-      const distanceToObstacle = Phaser.Math.Distance.Between(x, y, obstacle.x, obstacle.y)
+      const distanceToObstacle = Phaser.Math.Distance.Between(
+        x,
+        y,
+        obstacle.x,
+        obstacle.y
+      );
       if (distanceToObstacle < 200) {
         // Si está demasiado cerca de un obstáculo
-        x = this.player.sprite.x + Phaser.Math.Between(300, 500)
-        y = this.player.sprite.y + Phaser.Math.Between(300, 500)
+        x = this.player.sprite.x + Phaser.Math.Between(300, 500);
+        y = this.player.sprite.y + Phaser.Math.Between(300, 500);
       }
     }
 
-
     // Crear portal
-    this.portal = new Portal(this, x, y)
+    this.portal = new Portal(this, x, y);
 
     // Mostrar mensaje
-    this.showMessage("¡Portal abierto! Escapa para ganar.")
+    this.showMessage("¡Portal abierto! Escapa para ganar.");
   }
 
   // Método para teletransportar al jugador al inicio
   respawnPlayerAtStart() {
     if (this.player) {
-      this.player.sprite.x = 512
-      this.player.sprite.y = 600
-      this.showMessage("¡Volviendo al inicio!")
+      this.player.sprite.x = 512;
+      this.player.sprite.y = 600;
+      this.showMessage("¡Volviendo al inicio!");
     }
   }
 
@@ -534,7 +616,10 @@ export class World2 extends Scene {
     let offsetY = 0;
     if (this.activeMessages && this.activeMessages.length > 0) {
       // Si ya hay mensajes, calculamos el espacio total que ocupan
-      offsetY = this.activeMessages.reduce((totalHeight, message) => totalHeight + message.height + 20, 0); // 20 es el espacio entre los mensajes
+      offsetY = this.activeMessages.reduce(
+        (totalHeight, message) => totalHeight + message.height + 20,
+        0
+      ); // 20 es el espacio entre los mensajes
     }
 
     // Crear el nuevo mensaje
@@ -573,10 +658,8 @@ export class World2 extends Scene {
       onComplete: () => {
         message.destroy();
         // Limpiar el mensaje de la lista de mensajes activos
-        this.activeMessages = this.activeMessages.filter(m => m !== message);
+        this.activeMessages = this.activeMessages.filter((m) => m !== message);
       },
     });
   }
-
-
 }
